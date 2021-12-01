@@ -10,6 +10,11 @@ int Balance_Pwm_X,Velocity_Pwm_X,Balance_Pwm_Y,Velocity_Pwm_Y;
 #define X_PARAMETER           (0.5f)               
 #define Y_PARAMETER           (sqrt(3)/2.f)      
 #define L_PARAMETER           (1.0f)  
+float deltaT=0.05;
+int prevBias;
+int P;
+int I;
+int D;
 
 
 
@@ -92,28 +97,31 @@ int EXTI15_10_IRQHandler(void)
 
 
 
-
-
 int balance_Roll(float Angle,float Gyro)
 {  
    float Bias;
 	 int balance;
-	 Bias=Angle;   
-	 balance=Balance_Kp*Bias+Gyro*Balance_Kd/100;          
-	 return balance;
+	 Bias=Angle-Gyro;
+	 P=Balance_Kp*Bias;
+	 I=I+Balance_Ki*(Bias*deltaT);
+	 D=Balance_Kd*((Bias-prevBias)/deltaT);
+	 prevBias=Bias;
+	   
+	 balance=P+I+D;
+	return balance;
 }
-
-
-
-
 
 int balance_Pitch(float Angle,float Gyro)
 {  
    float Bias;
 	 int balance;
-	 Bias=Angle;        
-	 balance=Balance_Kp*Bias+Gyro*Balance_Kd/100;         
-	 return balance;
+	 Bias=Angle-Gyro;
+	 P=Balance_Kp*Bias;
+	 I=Balance_Ki*Bias*deltaT;
+	 D=Balance_Kd*((Bias-prevBias)/deltaT);
+	 prevBias=Bias;
+	 balance=P+I+D;
+	return balance;
 }
 
 
